@@ -1,12 +1,3 @@
-should i add readme ? if yes then creat a impreasive readme
-
-Yes! A good README is essential for any GitHub project. Here's an impressive README for your Infinity AI Hub:
-
-_File edits failed: Failed to save file "C:\\README.md": Access is denied. (os error 5) _
-
-Let me create the README content for you to copy and paste into GitHub:
-
-```markdown
 # 🚀 Infinity AI Hub - Multi-Agent AI System
 
 <div align="center">
