@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinity AI Hub - Multi-Agent AI System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'orbitron': ['Orbitron', 'monospace']
+                    },
+                    animation: {
+                        'gradient': 'gradient 8s linear infinite',
+                        'bounce-slow': 'bounce 3s infinite',
+                        'wiggle': 'wiggle 1s ease-in-out infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'spin-slow': 'spin 20s linear infinite',
+                        'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'fade-in': 'fadeIn 0.8s ease-out'
+                    },
+                    keyframes: {
+                        gradient: {
+                            '0%, 100%': { 'background-size': '200% 200%', 'background-position': 'left center' },
+                            '50%': { 'background-size': '200% 200%', 'background-position': 'right center' }
+                        },
+                        wiggle: {
+                            '0%, 100%': { transform: 'rotate(-3deg)' },
+                            '50%': { transform: 'rotate(3deg)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        },
+                        glow: {
+                            '0%': { 'box-shadow': '0 0 20px rgba(139, 92, 246, 0.5)' },
+                            '100%': { 'box-shadow': '0 0 40px rgba(139, 92, 246, 0.8)' }
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { opacity: '0.8', transform: 'scale(1)' },
+                            '50%': { opacity: '1', transform: 'scale(1.05)' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        }
+                    },
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                        'cyber-grid': 'linear-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 92, 246, 0.1) 1px, transparent 1px)'
+                    },
+                    backdropBlur: {
+                        'xs': '2px'
+                    }
+                }
+            }
+        }
+        
+        // Alpine.js theme store
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('theme', {
+                dark: localStorage.getItem('theme') === 'dark' || 
+                      (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches),
+                
+                toggle() {
+                    this.dark = !this.dark;
+                    localStorage.setItem('theme', this.dark ? 'dark' : 'light');
+                    this.updateDOM();
+                },
+                
+                updateDOM() {
+                    if (this.dark) {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+                },
+                
+                init() {
+                    this.updateDOM();
+                }
+            });
+        });
+    </script>
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif;
+            background-attachment: fixed;
+        }
+        
+        .cyber-text {
+            font-family: 'Orbitron', monospace;
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.7);
+        }
+        
+        .neon-border {
+            border: 1px solid rgba(139, 92, 246, 0.6);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), inset 0 0 20px rgba(139, 92, 246, 0.1);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .dark .glass-effect {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .dark .gradient-text {
+            background: linear-gradient(135deg, #a855f7 0%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .typing-dots {
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .typing-dots::after {
+            content: '';
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dots::before {
+            content: '● ● ';
+            animation: typing 1.4s infinite;
+            opacity: 0.6;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% { opacity: 0.2; }
+            30% { opacity: 1; }
+        }
+        
+        .agent-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        
+        .agent-card:hover {
+            transform: translateY(-8px) rotateX(5deg);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .dark .agent-card:hover {
+            box-shadow: 0 25px 50px -12px rgba(139, 92, 246, 0.3);
+        }
+        
+        .cyber-button {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(45deg, transparent, rgba(139, 92, 246, 0.1), transparent);
+            border: 1px solid rgba(139, 92, 246, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .cyber-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.4), transparent);
+            transition: left 0.5s;
+        }
+        
+        .cyber-button:hover::before {
+            left: 100%;
+        }
+        
+        .cyber-button:hover {
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
+            border-color: rgba(139, 92, 246, 0.8);
+        }
+        
+        .scroll-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.1s ease;
+            z-index: 1000;
+        }
+        
+        .dark .scroll-indicator {
+            background: linear-gradient(90deg, #a855f7, #06b6d4);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+        
+        .dark ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 4px;
+        }
+        
+        .dark ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #a855f7, #06b6d4);
+        }
+        
+        .parallax-bg {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(139, 92, 246, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(139, 92, 246, 0.1) 1px, transparent 1px);
+            animation: float 20s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="font-inter transition-all duration-500 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900 dark:to-black text-gray-900 dark:text-white overflow-x-hidden" 
+      x-data="infinityHub()" 
+      x-init="$store.theme.init()"
+      @scroll.window="updateScrollProgress">
+
+    <!-- Scroll Progress Indicator -->
+    <div class="scroll-indicator" :style="`width: ${scrollProgress}%`"></div>
+
+    <!-- Animated Background Pattern -->
+    <div class="parallax-bg fixed inset-0 opacity-20 dark:opacity-10 pointer-events-none"></div>
+
+    <!-- Theme Toggle Button -->
+    <button @click="$store.theme.toggle()" 
+            class="fixed top-6 right-6 z-50 p-4 rounded-full glass-effect hover:scale-110 transition-all duration-300 group"
+            aria-label="Toggle theme">
+        <div class="relative">
+            <i :class="$store.theme.dark ? 'fas fa-sun text-yellow-400' : 'fas fa-moon text-indigo-600'" 
+               class="text-xl transition-all duration-300 group-hover:rotate-12"></i>
+            <div class="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                 :class="$store.theme.dark ? 'animate-glow bg-yellow-400/20' : 'animate-glow bg-indigo-600/20'"></div>
+        </div>
+    </button>
+
+    <!-- Navigation Header -->
+    <nav class="glass-effect sticky top-0 z-40 border-b border-white/20 dark:border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center space-x-4">
+                    <div class="cyber-button p-3 rounded-xl">
+                        <i class="fas fa-infinity text-2xl gradient-text animate-spin-slow"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold cyber-text gradient-text">
+                            Infinity AI Hub
+                        </h1>
+                        <p class="text-sm opacity-70">Next-Gen Multi-Agent AI System</p>
+                    </div>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-3 h-3 bg-emerald-400 rounded-full animate-pulse-glow"></div>
+                        <span class="text-sm font-medium">System Online</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <i class="fas fa-robot text-purple-500 animate-float"></i>
+                        <span class="text-sm font-medium" x-text="`${activeAgents} Agents Active`"></span>
+                    </div>
+                    <button @click="scrollToSection('agents')" class="cyber-button px-4 py-2 rounded-lg text-sm font-medium">
+                        View Agents
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="relative min-h-screen flex items-center justify-center py-20" x-show="!chatStarted">
+        <!-- 3D Background Canvas -->
+        <canvas id="bg3d" class="absolute inset-0 opacity-30 dark:opacity-60"></canvas>
+        
+        <div class="relative z-10 max-w-7xl mx-auto px-4 text-center">
+            <div class="animate-fade-in">
+                <!-- Hero Icon -->
+                <div class="mx-auto w-32 h-32 rounded-full glass-effect grid place-items-center mb-8 animate-float">
+                    <i class="fas fa-infinity text-6xl gradient-text cyber-text animate-pulse-glow"></i>
+                </div>
+
+                <!-- Hero Text -->
+                <h1 class="text-6xl md:text-8xl font-black cyber-text gradient-text mb-6 animate-slide-up">
+                    INFINITY AI HUB
+                </h1>
+                <p class="text-xl md:text-2xl opacity-80 mb-8 max-w-4xl mx-auto leading-relaxed animate-slide-up" style="animation-delay: 0.2s">
+                    Experience the future of AI collaboration with our advanced multi-agent system. 
+                    Six specialized AI agents working in perfect harmony to solve any challenge.
+                </p>
+
+                <!-- Hero Buttons -->
+                <div class="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12 animate-slide-up" style="animation-delay: 0.4s">
+                    <button @click="startChat()" class="cyber-button px-8 py-4 rounded-xl font-bold text-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 transform hover:scale-105 transition-all duration-300">
+                        <i class="fas fa-rocket mr-3"></i>
+                        Launch AI Interface
+                    </button>
+                    <button @click="scrollToSection('features')" class="cyber-button px-8 py-4 rounded-xl font-bold text-lg">
+                        <i class="fas fa-sparkles mr-3"></i>
+                        Explore Features
+                    </button>
+                </div>
+
+                <!-- Stats Counter -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto animate-slide-up" style="animation-delay: 0.6s">
+                    <div class="glass-effect p-6 rounded-xl text-center group hover:scale-105 transition-transform duration-300">
+                        <div class="text-3xl font-bold gradient-text cyber-text group-hover:animate-pulse">6</div>
+                        <div class="text-sm opacity-70">AI Agents</div>
+                    </div>
+                    <div class="glass-effect p-6 rounded-xl text-center group hover:scale-105 transition-transform duration-300">
+                        <div class="text-3xl font-bold gradient-text cyber-text group-hover:animate-pulse">∞</div>
+                        <div class="text-sm opacity-70">Possibilities</div>
+                    </div>
+                    <div class="glass-effect p-6 rounded-xl text-center group hover:scale-105 transition-transform duration-300">
+                        <div class="text-3xl font-bold gradient-text cyber-text group-hover:animate-pulse">24/7</div>
+                        <div class="text-sm opacity-70">Available</div>
+                    </div>
+                    <div class="glass-effect p-6 rounded-xl text-center group hover:scale-105 transition-transform duration-300">
+                        <div class="text-3xl font-bold gradient-text cyber-text group-hover:animate-pulse">100%</div>
+                        <div class="text-sm opacity-70">Secure</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <i class="fas fa-chevron-down text-2xl opacity-50"></i>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20" x-show="!chatStarted">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl font-bold cyber-text gradient-text mb-6">Powerful Capabilities</h2>
+                <p class="text-xl opacity-80 max-w-3xl mx-auto">Discover what makes our AI system unique with cutting-edge features designed for maximum productivity</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <template x-for="(feature, index) in features" :key="index">
+                    <div class="glass-effect p-8 rounded-xl agent-card group cursor-pointer"
+                         @click="selectedFeature = feature"
+                         :class="selectedFeature === feature ? 'neon-border' : ''">
+                        <div class="text-center">
+                            <div class="w-16 h-16 mx-auto mb-6 rounded-full glass-effect flex items-center justify-center group-hover:animate-float">
+                                <i :class="feature.icon" class="text-3xl gradient-text"></i>
+                            </div>
+                            <h3 class="text-xl font-bold mb-4 cyber-text" x-text="feature.title"></h3>
+                            <p class="opacity-80 mb-6" x-text="feature.description"></p>
+                            <div class="flex flex-wrap gap-2 justify-center">
+                                <template x-for="tag in feature.tags">
+                                    <span class="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-xs font-medium" x-text="tag"></span>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Agents Section -->
+    <section id="agents" class="py-20" x-show="!chatStarted">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl font-bold cyber-text gradient-text mb-6">Meet Your AI Agents</h2>
+                <p class="text-xl opacity-80 max-w-3xl mx-auto">Each agent is a specialist in their field, ready to collaborate and deliver exceptional results</p>
+            </div>
+
+            <!-- Agent Showcase -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+                <template x-for="(agent, index) in agents" :key="agent.id">
+                    <div class="glass-effect p-8 rounded-xl agent-card group cursor-pointer relative overflow-hidden"
+                         @click="selectedAgent = agent"
+                         :class="selectedAgent === agent ? 'neon-border' : ''"
+                         :style="`animation-delay: ${index * 0.1}s`">
+                        
+                        <!-- Agent Card Background Effect -->
+                        <div class="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500"
+                             :style="`background: linear-gradient(135deg, ${agent.color}20, transparent)`"></div>
+                        
+                        <div class="relative z-10">
+                            <!-- Status Indicator -->
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-3 h-3 rounded-full" 
+                                         :class="agent.status === 'online' ? 'bg-emerald-400 animate-pulse-glow' : 
+                                                agent.status === 'busy' ? 'bg-yellow-400 animate-pulse' : 'bg-red-400'"></div>
+                                    <span class="text-xs opacity-70 capitalize" x-text="agent.status"></span>
+                                </div>
+                                <div class="px-2 py-1 bg-black/20 dark:bg-white/10 rounded-full text-xs font-medium">
+                                    Agent #<span x-text="agent.id"></span>
+                                </div>
+                            </div>
+
+                            <!-- Agent Icon & Info -->
+                            <div class="text-center">
+                                <div class="w-20 h-20 mx-auto mb-6 rounded-full glass-effect flex items-center justify-center group-hover:animate-float"
+                                     :style="`background: linear-gradient(135deg, ${agent.color}40, ${agent.color}20)`">
+                                    <i :class="agent.icon" class="text-3xl" :style="`color: ${agent.color}`"></i>
+                                </div>
+                                <h3 class="text-xl font-bold mb-2 cyber-text" x-text="agent.name"></h3>
+                                <p class="opacity-80 mb-4" x-text="agent.description"></p>
+                                
+                                <!-- Specialties -->
+                                <div class="space-y-2 mb-6">
+                                    <template x-for="specialty in agent.specialties">
+                                        <div class="flex items-center justify-between text-sm">
+                                            <span x-text="specialty.name"></span>
+                                            <div class="flex space-x-1">
+                                                <template x-for="i in 5">
+                                                    <div class="w-2 h-2 rounded-full"
+                                                         :class="i <= specialty.level ? 'bg-purple-400' : 'bg-gray-300 dark:bg-gray-600'"></div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <!-- Action Button -->
+                                <button @click.stop="selectAgent(agent)" 
+                                        class="cyber-button w-full py-3 rounded-lg font-medium transition-all duration-300"
+                                        :class="selectedAgent === agent ? 'bg-purple-600 text-white' : ''">
+                                    <span x-text="selectedAgent === agent ? 'Selected' : 'Select Agent'"></span>
+                                    <i :class="selectedAgent === agent ? 'fas fa-check ml-2' : 'fas fa-arrow-right ml-2'"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Start Chat Button -->
+            <div class="text-center">
+                <button @click="startChat()" 
+                        class="cyber-button px-12 py-4 rounded-xl font-bold text-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 transform hover:scale-105 transition-all duration-300">
+                    <i class="fas fa-comments mr-3"></i>
+                    Start AI Collaboration
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chat Interface -->
+    <div class="min-h-screen py-8" x-show="chatStarted" x-transition>
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                
+                <!-- Sidebar: Agent Status & Controls -->
+                <div class="lg:col-span-1 space-y-6">
+                    
+                    <!-- Active Agents Panel -->
+                    <div class="glass-effect rounded-xl p-6">
+                        <h2 class="text-lg font-bold cyber-text mb-4 flex items-center">
+                            <i class="fas fa-users mr-3 gradient-text"></i>
+                            Active Agents
+                        </h2>
+                        <div class="space-y-3 max-h-80 overflow-y-auto">
+                            <template x-for="agent in agents" :key="agent.id">
+                                <div class="p-4 rounded-lg glass-effect transition-all duration-300"
+                                     :class="agent.active ? 'neon-border' : ''"
+                                     @click="toggleAgent(agent)">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 rounded-full flex items-center justify-center"
+                                                 :style="`background: linear-gradient(135deg, ${agent.color}40, ${agent.color}20)`">
+                                                <i :class="agent.icon" :style="`color: ${agent.color}`"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-bold" x-text="agent.name"></div>
+                                                <div class="text-xs opacity-70" x-text="agent.description"></div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="w-2 h-2 rounded-full mr-2"
+                                                 :class="agent.status === 'online' ? 'bg-emerald-400 animate-pulse-glow' : 
+                                                        agent.status === 'busy' ? 'bg-yellow-400 animate-pulse' : 'bg-red-400'"></div>
+                                            <div x-show="agent.active" class="text-purple-400">
+                                                <i class="fas fa-check-circle"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- System Status -->
+                    <div class="glass-effect rounded-xl p-6">
+                        <h3 class="font-bold mb-4 flex items-center">
+                            <i class="fas fa-server mr-3 text-emerald-400"></i>
+                            System Status
+                        </h3>
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between items-center">
+                                <span>Frontend</span>
+                                <span class="text-emerald-400 flex items-center">
+                                    <div class="w-2 h-2 bg-emerald-400 rounded-full mr-2 animate-pulse-glow"></div>
+                                    Port 5173
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span>Backend</span>
+                                <span class="text-emerald-400 flex items-center">
+                                    <div class="w-2 h-2 bg-emerald-400 rounded-full mr-2 animate-pulse-glow"></div>
+                                    Port 3000
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span>AI Models</span>
+                                <span class="text-emerald-400 flex items-center">
+                                    <div class="w-2 h-2 bg-emerald-400 rounded-full mr-2 animate-pulse-glow"></div>
+                                    Ready
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span>Messages</span>
+                                <span class="gradient-text font-bold" x-text="messages.length"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="glass-effect rounded-xl p-6">
+                        <h3 class="font-bold mb-4">Quick Actions</h3>
+                        <div class="space-y-2">
+                            <button @click="clearChat()" class="cyber-button w-full py-2 rounded-lg text-sm">
+                                <i class="fas fa-trash mr-2"></i>Clear Chat
+                            </button>
+                            <button @click="exportChat()" class="cyber-button w-full py-2 rounded-lg text-sm">
+                                <i class="fas fa-download mr-2"></i>Export Chat
+                            </button>
+                            <button @click="chatStarted = false" class="cyber-button w-full py-2 rounded-lg text-sm">
+                                <i class="fas fa-home mr-2"></i>Back to Home
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Chat Area -->
+                <div class="lg:col-span-3">
+                    <div class="glass-effect rounded-xl h-[800px] flex flex-col">
+                        
+                        <!-- Chat Header -->
+                        <div class="p-6 border-b border-white/10">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h2 class="text-2xl font-bold cyber-text gradient-text flex items-center">
+                                        <i class="fas fa-comments mr-3"></i>
+                                        AI Collaboration Hub
+                                    </h2>
+                                    <p class="opacity-70 mt-1">
+                                        <span x-text="activeAgents"></span> agents ready • 
+                                        <span class="typing-dots" x-show="isTyping">AI thinking</span>
+                                        <span x-show="!isTyping">Ready for input</span>
+                                    </p>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <div class="flex -space-x-2">
+                                        <template x-for="agent in agents.filter(a => a.active)">
+                                            <div class="w-8 h-8 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center"
+                                                 :style="`background: ${agent.color}40`">
+                                                <i :class="agent.icon" class="text-xs" :style="`color: ${agent.color}`"></i>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Messages Container -->
+                        <div class="flex-1 overflow-y-auto p-6 space-y-4" id="messagesContainer">
+                            <template x-for="message in messages" :key="message.id">
+                                <div class="animate-slide-up" :class="message.isUser ? 'flex justify-end' : 'flex justify-start'">
+                                    <div class="max-w-md lg:max-w-lg">
+                                        <!-- Message Bubble -->
+                                        <div class="px-6 py-4 rounded-2xl relative"
+                                             :class="message.isUser ? 
+                                                'bg-gradient-to-r from-purple-600 to-blue-600 text-white' : 
+                                                'glass-effect'">
+                                            
+                                            <!-- Agent Avatar (for AI messages) -->
+                                            <div x-show="!message.isUser && message.agent" class="flex items-center mb-3">
+                                                <div class="w-6 h-6 rounded-full mr-2 flex items-center justify-center"
+                                                     :style="message.agentColor ? `background: ${message.agentColor}40` : 'background: rgba(139, 92, 246, 0.2)'">
+                                                    <i :class="message.agentIcon || 'fas fa-robot'" 
+                                                       class="text-xs" 
+                                                       :style="message.agentColor ? `color: ${message.agentColor}` : 'color: #8b5cf6'"></i>
+                                                </div>
+                                                <span class="text-sm font-bold gradient-text" x-text="message.agent"></span>
+                                            </div>
+                                            
+                                            <!-- Message Content -->
+                                            <div x-html="message.content" class="message-content"></div>
+                                            
+                                            <!-- Message Metadata -->
+                                            <div class="flex items-center justify-between mt-3 text-xs opacity-60">
+                                                <span x-text="message.timestamp"></span>
+                                                <div x-show="!message.isUser && message.agent">
+                                                    <i class="fas fa-robot mr-1"></i>AI Response
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- Typing Indicator -->
+                            <div x-show="isTyping" class="flex justify-start">
+                                <div class="glass-effect px-6 py-4 rounded-2xl flex items-center space-x-3">
+                                    <div class="flex space-x-1">
+                                        <div class="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                                        <div class="w-2 h-2 bg-purple-400 rounded-full animate-pulse" style="animation-delay: 0.2s;"></div>
+                                        <div class="w-2 h-2 bg-purple-400 rounded-full animate-pulse" style="animation-delay: 0.4s;"></div>
+                                    </div>
+                                    <span class="text-sm opacity-70">AI agents are collaborating...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Input Area -->
+                        <div class="p-6 border-t border-white/10">
+                            <form @submit.prevent="sendMessage()" class="space-y-4">
+                                <!-- Message Input -->
+                                <div class="flex space-x-4">
+                                    <input type="text" 
+                                           x-model="currentMessage" 
+                                           placeholder="Ask me anything... I can help with coding, design, research, writing, automation, and voice tasks!"
+                                           class="flex-1 px-6 py-4 glass-effect rounded-xl focus:neon-border focus:outline-none transition-all duration-300"
+                                           :disabled="isTyping">
+                                    
+                                    <button type="submit" 
+                                            class="cyber-button px-8 py-4 rounded-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 transition-all duration-300"
+                                            :disabled="!currentMessage.trim() || isTyping">
+                                        <i :class="isTyping ? 'fas fa-spinner animate-spin' : 'fas fa-paper-plane'"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Quick Suggestions -->
+                                <div class="flex flex-wrap gap-2">
+                                    <template x-for="suggestion in quickSuggestions">
+                                        <button type="button"
+                                                @click="sendSuggestion(suggestion)" 
+                                                class="cyber-button px-4 py-2 rounded-full text-sm font-medium opacity-70 hover:opacity-100 transition-opacity">
+                                            <span x-text="suggestion"></span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="glass-effect border-t border-white/10 mt-20" x-show="!chatStarted">
+        <div class="max-w-7xl mx-auto px-4 py-12">
+            <div class="text-center">
+                <div class="flex justify-center items-center mb-6">
+                    <i class="fas fa-infinity text-3xl gradient-text mr-4"></i>
+                    <span class="text-2xl font-bold cyber-text gradient-text">Infinity AI Hub</span>
+                </div>
+                <p class="text-lg opacity-80 mb-8">The future of AI collaboration is here</p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
+                    <div class="flex items-center justify-center space-x-2">
+                        <i class="fas fa-rocket text-purple-400"></i>
+                        <span>6 Specialized Agents</span>
+                    </div>
+                    <div class="flex items-center justify-center space-x-2">
+                        <i class="fas fa-bolt text-yellow-400"></i>
+                        <span>Real-time Processing</span>
+                    </div>
+                    <div class="flex items-center justify-center space-x-2">
+                        <i class="fas fa-shield-alt text-emerald-400"></i>
+                        <span>Secure & Private</span>
+                    </div>
+                    <div class="flex items-center justify-center space-x-2">
+                        <i class="fas fa-globe text-blue-400"></i>
+                        <span>Always Available</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Three.js 3D Background -->
+    <script src="https://unpkg.com/three@0.159.0/build/three.min.js"></script>
+    <script>
+        // 3D Background Animation
+        (function init3DBackground() {
+            const canvas = document.getElementById('bg3d');
+            if (!canvas || !window.THREE) return;
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.position.set(0, 0, 15);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            
+            const pointLight1 = new THREE.PointLight(0x8b5cf6, 100, 100);
+            pointLight1.position.set(15, 15, 15);
+            scene.add(pointLight1);
+            
+            const pointLight2 = new THREE.PointLight(0x06b6d4, 80, 120);
+            pointLight2.position.set(-20, -10, -15);
+            scene.add(pointLight2);
+
+            // Central Geometry
+            const geometry = new THREE.IcosahedronGeometry(3, 1);
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x8b5cf6,
+                metalness: 0.9,
+                roughness: 0.2,
+                wireframe: false,
+                emissive: 0x000000
+            });
+            const centerMesh = new THREE.Mesh(geometry, material);
+            scene.add(centerMesh);
+
+            // Floating Particles
+            const particleCount = 1000;
+            const particles = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            
+            for (let i = 0; i < particleCount * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 100;
+                positions[i + 1] = (Math.random() - 0.5) * 100;
+                positions[i + 2] = (Math.random() - 0.5) * 100;
+            }
+            
+            particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const particleMaterial = new THREE.PointsMaterial({
+                color: 0x8b5cf6,
+                size: 0.1,
+                transparent: true,
+                opacity: 0.8
+            });
+            const particleSystem = new THREE.Points(particles, particleMaterial);
+            scene.add(particleSystem);
+
+            // Mouse interaction
+            const mouse = { x: 0, y: 0 };
+            window.addEventListener('mousemove', (event) => {
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            });
+
+            // Resize handler
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            // Animation loop
+            const clock = new THREE.Clock();
+            function animate() {
+                requestAnimationFrame(animate);
+                const elapsedTime = clock.getElapsedTime();
+                
+                // Rotate center mesh
+                centerMesh.rotation.x = elapsedTime * 0.3;
+                centerMesh.rotation.y = elapsedTime * 0.5;
+                
+                // Animate particles
+                particleSystem.rotation.y = elapsedTime * 0.05;
+                
+                // Mouse interaction
+                camera.position.x += (mouse.x * 2 - camera.position.x) * 0.05;
+                camera.position.y += (mouse.y * 2 - camera.position.y) * 0.05;
+                camera.lookAt(0, 0, 0);
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+        })();
+
+        // Alpine.js Main App Data
+        function infinityHub() {
+            return {
+                chatStarted: false,
+                currentMessage: '',
+                messages: [],
+                isTyping: false,
+                activeAgents: 6,
+                selectedAgent: null,
+                selectedFeature: null,
+                scrollProgress: 0,
+
+                features: [
+                    {
+                        icon: 'fas fa-code',
+                        title: 'Advanced Coding',
+                        description: 'Full-stack development with AI-powered code generation, debugging, and optimization',
+                        tags: ['React', 'Node.js', 'Python', 'TypeScript']
+                    },
+                    {
+                        icon: 'fas fa-palette',
+                        title: 'Creative Design',
+                        description: 'UI/UX design, animations, and visual content creation with modern frameworks',
+                        tags: ['Figma', 'Tailwind', 'CSS3', 'Animation']
+                    },
+                    {
+                        icon: 'fas fa-brain',
+                        title: 'AI Research',
+                        description: 'Deep analysis, data processing, and intelligent insights from multiple sources',
+                        tags: ['ML', 'Data Science', 'Analytics', 'NLP']
+                    },
+                    {
+                        icon: 'fas fa-pen-fancy',
+                        title: 'Content Writing',
+                        description: 'Professional content creation, copywriting, and documentation',
+                        tags: ['Blogs', 'Copy', 'Technical', 'Creative']
+                    },
+                    {
+                        icon: 'fas fa-cogs',
+                        title: 'Automation',
+                        description: 'Workflow automation, API integration, and process optimization',
+                        tags: ['APIs', 'Workflows', 'DevOps', 'CI/CD']
+                    },
+                    {
+                        icon: 'fas fa-microphone',
+                        title: 'Voice & Audio',
+                        description: 'Speech processing, audio analysis, and voice-based interactions',
+                        tags: ['TTS', 'STT', 'Audio', 'Voice UI']
+                    }
+                ],
+
+                agents: [
+                    {
+                        id: 1,
+                        name: 'Code Agent',
+                        description: 'Full-Stack Development Expert',
+                        icon: 'fas fa-code',
+                        color: '#3b82f6',
+                        status: 'online',
+                        active: true,
+                        specialties: [
+                            { name: 'Frontend Development', level: 5 },
+                            { name: 'Backend APIs', level: 5 },
+                            { name: 'Database Design', level: 4 },
+                            { name: 'DevOps', level: 3 }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        name: 'Design Agent',
+                        description: 'UI/UX & Creative Designer',
+                        icon: 'fas fa-palette',
+                        color: '#ec4899',
+                        status: 'online',
+                        active: true,
+                        specialties: [
+                            { name: 'UI Design', level: 5 },
+                            { name: 'UX Research', level: 4 },
+                            { name: 'Prototyping', level: 5 },
+                            { name: 'Animation', level: 4 }
+                        ]
+                    },
+                    {
+                        id: 3,
+                        name: 'Research Agent',
+                        description: 'Data Analysis & Research',
+                        icon: 'fas fa-search',
+                        color: '#10b981',
+                        status: 'online',
+                        active: true,
+                        specialties: [
+                            { name: 'Data Analysis', level: 5 },
+                            { name: 'Research', level: 5 },
+                            { name: 'Machine Learning', level: 4 },
+                            { name: 'Statistics', level: 4 }
+                        ]
+                    },
+                    {
+                        id: 4,
+                        name: 'Writing Agent',
+                        description: 'Content Creation Specialist',
+                        icon: 'fas fa-pen-fancy',
+                        color: '#f59e0b',
+                        status: 'online',
+                        active: true,
+                        specialties: [
+                            { name: 'Creative Writing', level: 5 },
+                            { name: 'Technical Docs', level: 5 },
+                            { name: 'Copywriting', level: 4 },
+                            { name: 'SEO Content', level: 4 }
+                        ]
+                    },
+                    {
+                        id: 5,
+                        name: 'Automation Agent',
+                        description: 'Workflow & Integration Expert',
+                        icon: 'fas fa-cogs',
+                        color: '#8b5cf6',
+                        status: 'busy',
+                        active: false,
+                        specialties: [
+                            { name: 'API Integration', level: 5 },
+                            { name: 'Workflow Design', level: 5 },
+                            { name: 'Process Automation', level: 4 },
+                            { name: 'Testing', level: 4 }
+                        ]
+                    },
+                    {
+                        id: 6,
+                        name: 'Voice Agent',
+                        description: 'Audio & Speech Processing',
+                        icon: 'fas fa-microphone',
+                        color: '#ef4444',
+                        status: 'offline',
+                        active: false,
+                        specialties: [
+                            { name: 'Speech Recognition', level: 4 },
+                            { name: 'Text-to-Speech', level: 4 },
+                            { name: 'Audio Processing', level: 3 },
+                            { name: 'Voice UI', level: 3 }
+                        ]
+                    }
+                ],
+
+                quickSuggestions: [
+                    'Help me build a React component',
+                    'Design a modern dashboard',
+                    'Research AI trends for 2024',
+                    'Write a technical blog post',
+                    'Create an API workflow',
+                    'What are your capabilities?'
+                ],
+
+                startChat() {
+                    this.chatStarted = true;
+                    this.addWelcomeMessage();
+                },
+
+                addWelcomeMessage() {
+                    this.addMessage(
+                        `🚀 <strong>Welcome to Infinity AI Hub!</strong><br><br>` +
+                        `I'm your AI collaboration assistant with ${this.activeAgents} specialized agents ready to help:<br><br>` +
+                        `🔧 <strong>Code Agent</strong> - Full-stack development & programming<br>` +
+                        `🎨 <strong>Design Agent</strong> - UI/UX design & creative work<br>` +
+                        `🔍 <strong>Research Agent</strong> - Data analysis & research<br>` +
+                        `✍️ <strong>Writing Agent</strong> - Content creation & documentation<br>` +
+                        `⚡ <strong>Automation Agent</strong> - Workflows & integrations<br>` +
+                        `🎙️ <strong>Voice Agent</strong> - Audio & speech processing<br><br>` +
+                        `<em>What would you like to create today?</em>`,
+                        false,
+                        'System',
+                        'fas fa-infinity',
+                        '#8b5cf6'
+                    );
+                },
+
+                sendMessage() {
+                    if (!this.currentMessage.trim() || this.isTyping) return;
+                    
+                    const message = this.currentMessage.trim();
+                    this.addMessage(message, true);
+                    this.currentMessage = '';
+                    this.processMessage(message);
+                },
+
+                sendSuggestion(suggestion) {
+                    this.currentMessage = suggestion;
+                    this.sendMessage();
+                },
+
+                addMessage(content, isUser = false, agent = null, agentIcon = null, agentColor = null) {
+                    const message = {
+                        id: Date.now() + Math.random(),
+                        content: content,
+                        isUser: isUser,
+                        agent: agent,
+                        agentIcon: agentIcon,
+                        agentColor: agentColor,
+                        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    };
+                    
+                    this.messages.push(message);
+                    this.scrollToBottom();
+                },
+
+                processMessage(message) {
+                    this.isTyping = true;
+                    
+                    const lowerMessage = message.toLowerCase();
+                    let responseAgent = 'General Assistant';
+                    let agentResponse = '';
+                    let agentIcon = 'fas fa-robot';
+                    let agentColor = '#8b5cf6';
+
+                    // Reset agent states
+                    this.agents.forEach(agent => agent.active = false);
+
+                    // Determine responding agent based on message content
+                    if (this.containsKeywords(lowerMessage, ['code', 'program', 'develop', 'react', 'javascript', 'python', 'api', 'function', 'component'])) {
+                        const agent = this.agents[0];
+                        agent.active = true;
+                        responseAgent = agent.name;
+                        agentIcon = agent.icon;
+                        agentColor = agent.color;
+                        agentResponse = this.generateCodeResponse(message);
+                        
+                    } else if (this.containsKeywords(lowerMessage, ['design', 'ui', 'ux', 'layout', 'color', 'creative', 'visual', 'prototype'])) {
+                        const agent = this.agents[1];
+                        agent.active = true;
+                        responseAgent = agent.name;
+                        agentIcon = agent.icon;
+                        agentColor = agent.color;
+                        agentResponse = this.generateDesignResponse(message);
+                        
+                    } else if (this.containsKeywords(lowerMessage, ['research', 'analyze', 'data', 'trend', 'information', 'study', 'report'])) {
+                        const agent = this.agents[2];
+                        agent.active = true;
+                        responseAgent = agent.name;
+                        agentIcon = agent.icon;
+                        agentColor = agent.color;
+                        agentResponse = this.generateResearchResponse(message);
+                        
+                    } else if (this.containsKeywords(lowerMessage, ['write', 'content', 'blog', 'article', 'copy', 'documentation'])) {
+                        const agent = this.agents[3];
+                        agent.active = true;
+                        responseAgent = agent.name;
+                        agentIcon = agent.icon;
+                        agentColor = agent.color;
+                        agentResponse = this.generateWritingResponse(message);
+                        
+                    } else if (this.containsKeywords(lowerMessage, ['automat', 'workflow', 'integration', 'process', 'streamline'])) {
+                        const agent = this.agents[4];
+                        responseAgent = agent.name;
+                        agentIcon = agent.icon;
+                        agentColor = agent.color;
+                        agentResponse = this.generateAutomationResponse(message);
+                        
+                    } else if (this.containsKeywords(lowerMessage, ['voice', 'audio', 'speech', 'sound', 'microphone'])) {
+                        const agent = this.agents[5];
+                        responseAgent = agent.name;
+                        agentIcon = agent.icon;
+                        agentColor = agent.color;
+                        agentResponse = this.generateVoiceResponse(message);
+                        
+                    } else {
+                        agentResponse = this.generateGeneralResponse(message);
+                    }
+
+                    // Simulate processing delay
+                    setTimeout(() => {
+                        this.isTyping = false;
+                        this.addMessage(agentResponse, false, responseAgent, agentIcon, agentColor);
+                    }, 1500 + Math.random() * 1500);
+                },
+
+                containsKeywords(text, keywords) {
+                    return keywords.some(keyword => text.includes(keyword));
+                },
+
+                generateCodeResponse(message) {
+                    return `🔧 <strong>Code Agent activated!</strong><br><br>` +
+                           `For your request: "<em>${message}</em>"<br><br>` +
+                           `I can help you with:<br>` +
+                           `• Full-stack web development<br>` +
+                           `• React, Vue, Angular components<br>` +
+                           `• Node.js, Python, PHP backends<br>` +
+                           `• Database design & optimization<br>` +
+                           `• API development & integration<br>` +
+                           `• Code debugging & optimization<br><br>` +
+                           `Let's build something amazing together! What specific functionality do you need?`;
+                },
+
+                generateDesignResponse(message) {
+                    return `🎨 <strong>Design Agent ready to create!</strong><br><br>` +
+                           `For your design request: "<em>${message}</em>"<br><br>` +
+                           `I specialize in:<br>` +
+                           `• Modern UI/UX design principles<br>` +
+                           `• Responsive layout design<br>` +
+                           `• Color schemes & typography<br>` +
+                           `• Interactive animations<br>` +
+                           `• Prototyping & wireframing<br>` +
+                           `• Design system creation<br><br>` +
+                           `Let's create something beautiful and functional! What's your vision?`;
+                },
+
+                generateResearchResponse(message) {
+                    return `🔍 <strong>Research Agent analyzing...</strong><br><br>` +
+                           `Research topic: "<em>${message}</em>"<br><br>` +
+                           `My research capabilities include:<br>` +
+                           `• Comprehensive data analysis<br>` +
+                           `• Market trend identification<br>` +
+                           `• Statistical analysis & insights<br>` +
+                           `• Competitive research<br>` +
+                           `• Technical documentation review<br>` +
+                           `• Fact-checking & verification<br><br>` +
+                           `What specific information or insights are you looking for?`;
+                },
+
+                generateWritingResponse(message) {
+                    return `✍️ <strong>Writing Agent at your service!</strong><br><br>` +
+                           `Writing request: "<em>${message}</em>"<br><br>` +
+                           `I excel at:<br>` +
+                           `• Technical documentation<br>` +
+                           `• Blog posts & articles<br>` +
+                           `• Marketing copy<br>` +
+                           `• Creative writing<br>` +
+                           `• SEO-optimized content<br>` +
+                           `• Professional communications<br><br>` +
+                           `What type of content would you like me to help you create?`;
+                },
+
+                generateAutomationResponse(message) {
+                    return `⚡ <strong>Automation Agent (Currently Busy)</strong><br><br>` +
+                           `Automation request: "<em>${message}</em>"<br><br>` +
+                           `I'm currently optimizing workflows but can help with:<br>` +
+                           `• Process automation design<br>` +
+                           `• API integrations<br>` +
+                           `• Workflow optimization<br>` +
+                           `• Task scheduling<br>` +
+                           `• CI/CD pipeline setup<br>` +
+                           `• Testing automation<br><br>` +
+                           `<em>I'll be available shortly to streamline your processes!</em>`;
+                },
+
+                generateVoiceResponse(message) {
+                    return `🎙️ <strong>Voice Agent (Offline for Maintenance)</strong><br><br>` +
+                           `Voice request: "<em>${message}</em>"<br><br>` +
+                           `When online, I can assist with:<br>` +
+                           `• Text-to-speech conversion<br>` +
+                           `• Speech recognition<br>` +
+                           `• Audio processing<br>` +
+                           `• Voice UI development<br>` +
+                           `• Audio analysis<br>` +
+                           `• Sound effect generation<br><br>` +
+                           `<em>I'll be back online soon for all your audio needs!</em>`;
+                },
+
+                generateGeneralResponse(message) {
+                    return `🤖 <strong>General Assistant here!</strong><br><br>` +
+                           `Your message: "<em>${message}</em>"<br><br>` +
+                           `I can connect you with specialized agents:<br><br>` +
+                           `🔧 Mention <strong>"code"</strong> or <strong>"programming"</strong> → Code Agent<br>` +
+                           `🎨 Say <strong>"design"</strong> or <strong>"UI"</strong> → Design Agent<br>` +
+                           `🔍 Ask for <strong>"research"</strong> or <strong>"analysis"</strong> → Research Agent<br>` +
+                           `✍️ Request <strong>"writing"</strong> or <strong>"content"</strong> → Writing Agent<br>` +
+                           `⚡ Need <strong>"automation"</strong> → Automation Agent<br>` +
+                           `🎙️ Want <strong>"voice"</strong> help → Voice Agent<br><br>` +
+                           `How can I help you today?`;
+                },
+
+                scrollToBottom() {
+                    this.$nextTick(() => {
+                        const container = document.getElementById('messagesContainer');
+                        if (container) {
+                            container.scrollTop = container.scrollHeight;
+                        }
+                    });
+                },
+
+                clearChat() {
+                    this.messages = [];
+                    this.agents.forEach(agent => agent.active = false);
+                    this.addWelcomeMessage();
+                },
+
+                exportChat() {
+                    const chatData = {
+                        timestamp: new Date().toISOString(),
+                        messages: this.messages,
+                        agents: this.agents
+                    };
+                    const blob = new Blob([JSON.stringify(chatData, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `infinity-ai-chat-${new Date().toISOString().slice(0, 10)}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                },
+
+                selectAgent(agent) {
+                    this.selectedAgent = agent;
+                    agent.active = !agent.active;
+                },
+
+                toggleAgent(agent) {
+                    agent.active = !agent.active;
+                },
+
+                scrollToSection(sectionId) {
+                    const element = document.getElementById(sectionId);
+                    if (element) {
+                        element.scrollIntoView({ behavior: 'smooth' });
+                    }
+                },
+
+                updateScrollProgress() {
+                    const scrollTop = window.pageYOffset;
+                    const docHeight = document.body.scrollHeight - window.innerHeight;
+                    this.scrollProgress = (scrollTop / docHeight) * 100;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
